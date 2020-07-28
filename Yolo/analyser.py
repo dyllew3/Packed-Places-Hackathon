@@ -94,6 +94,9 @@ print(classes[0])
 
 vid = cv2.VideoCapture("./data/earthcam-1.mp4")
 
+frames_to_drop = 15
+current_frames = 0
+
 while True:
 
     peoplecount = 0
@@ -101,6 +104,12 @@ while True:
     ret, frame = vid.read()
     if not ret:
         break
+
+    if current_frames < frames_to_drop:
+        current_frames += 1
+        continue
+
+    current_frames = 0
 
     frameNum += 1
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -132,7 +141,15 @@ while True:
                 cv2.putText(frame, cls + "-" + str(int(cls_pred)), (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 3)
 
             pass
-    cv2.imshow('Stream', frame)
+
+    scale_percent = 50 # percent of original size
+    width = int(frame.shape[1] * scale_percent / 100)
+    height = int(frame.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    # resize image
+    resized = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA) 
+
+    cv2.imshow('Stream', resized)
     ch = 0xFF & cv2.waitKey(1)
     if ch == 27:
         break
